@@ -1,0 +1,14 @@
+{
+	"name": "file-explorer",
+	"version": "0.0.1",
+	"description": "描述",
+	"dependencies": {
+		"express": "^4.16.4",
+		"hashmap": "^2.3.0",
+		"http": "0.0.0",
+		"http-proxy": "^1.17.0",
+		"https": "^1.0.0",
+		"https-proxy": "0.0.2",
+		"node-zookeeper-client": "^0.2.3"
+	}
+}
