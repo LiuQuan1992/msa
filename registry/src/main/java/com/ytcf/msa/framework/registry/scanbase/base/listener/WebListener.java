@@ -26,10 +26,10 @@ import java.util.Map;
  */
 @Component
 public class WebListener implements ServletContextListener {
-    @Value("${server.address}")
+    @Value("${containers.servers.address}")
     private String serverAddress;
 
-    @Value("${server.port}")
+    @Value("${containers.servers.port}")
     private  int serverPort;
 
     @Autowired

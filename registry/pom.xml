@@ -6,11 +6,12 @@
         <groupId>com.ytcf.msa</groupId>
         <artifactId>framework</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>com.ytcf.msa.framework</groupId>
     <artifactId>registry</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
     <name>registry</name>
     <description>壹彤财富_微服务框架微服务开发框架_服务注册模块</description>
 
@@ -25,13 +26,6 @@
 
 
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+
 
 </project>

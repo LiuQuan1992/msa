@@ -35,6 +35,10 @@ var hashmap=require('hashmap');
 var cache=new hashmap();//存储服务节点
 var cacheAddress=new hashmap();//存储服务节点
 
+var cluster=require('cluster');//多核CPU运作
+var os=require('os');//获取系统架构 信息
+var CPUS=os.cpus().length;//获取系统CPU核数
+
 
 /*
  * @parm PORT 				   --PORT   当前网关运行的 端口 
@@ -48,16 +52,7 @@ var REGISTRY_PORT_SERVER='/registry';//项目根目录-后端服务跟目录
 var REGISTRY_PORT_WEB='/web';//
 
 
-//连接 ZooKeeper
-var zk=zookeeper.createClient(CONNECTION_STRING);
-zk.connect();
 
-//创建代理服务器对象并监听错误事件
-var proxy=httpProxy.createProxyServer();
-
-proxy.on('error',function(err,req,res){
-	res.end('error');
-});
 
 
 //代理模块 直接 跳转到代理地址
@@ -67,7 +62,7 @@ function proxyWeb(req,res,serviceName,addressPath,serviceAddress){
 		serviceAddress='127.0.0.1:8080';
 	}
 	//将其代理至指定位置
-	console.log("target:"+serviceAddress);
+	console.log(cluster.worker.id+"target:"+serviceAddress);
 	proxy.web(req,res,{
 		target:'http://'+serviceAddress
 	});
@@ -225,20 +220,72 @@ function getServiceAddress (req,res,serviceName){
 
 
 
+
+
+//连接 ZooKeeper
+var zk=zookeeper.createClient(CONNECTION_STRING);
+zk.connect();
+
+//创建代理服务器对象并监听错误事件
+var proxy=httpProxy.createProxyServer();
+
+proxy.on('error',function(err,req,res){
+	res.end('error');
+});
+
+
 //启动web服务器
+//当前进程为子进程
 //创建http请求服务 并 实现 服务发现和 反向代理
-var app=express();
-app.use(express.static('public'));
-app.all('*',function(req,res){
+// var app=express();
 
-		var serviceName=req.get('Service-Name');
+// app.use(express.static('public'));
+// app.all('*',function(req,res){
+
+// 		var serviceName=req.get('Service-Name');
 		
-		//插入 清空 请求判断 清空 
-		//if(){remove_cache(serviceName,servicePath);}
+// 		//插入 清空 请求判断 清空 
+// 		//if(){remove_cache(serviceName,servicePath);}
 
-		getServiceAddress(req,res,serviceName);
-});
+// 		getServiceAddress(req,res,serviceName);
+// });
+// 
 
-app.listen(PORT,function(){
-	console.log('server is running at %d',PORT);
-});
+
+// app.listen(PORT,function(){
+// 	console.log('server is running at %d',PORT);
+// });
+
+
+
+
+
+
+
+//多核CPU运行
+if(cluster.isMaster){
+	//当前进程为主进程
+	for (var i = CPUS - 1; i >= 0; i--) {
+		cluster.fork();
+	}
+
+}else{
+	//当前进程为子进程
+	//创建http请求服务 并 实现 服务发现和 反向代理
+	var app=express();
+
+	app.use(express.static('public'));
+	app.all('*',function(req,res){
+
+			var serviceName=req.get('Service-Name');
+			
+			//插入 清空 请求判断 清空 
+			//if(){remove_cache(serviceName,servicePath);}
+
+			getServiceAddress(req,res,serviceName);
+	});
+
+	app.listen(PORT,function(){
+		console.log(cluster.worker.id+'server is running at %d',PORT);
+	});
+}
